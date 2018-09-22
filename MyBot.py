@@ -80,8 +80,8 @@ for line in fileinput.input():
         if not monster.dead:
             # Weight for speed
             value = value + (7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects.speed
-            # Weight for heath
-            value = value + (me.base_health - me.health)*monster.death_effects.health
+            # Weight for heath (100 = base health)
+            value = value + (100 - me.health)*monster.death_effects.health
 
             statTotal = me.rock + me.paper + me.scissors
             # Weight for rock stat
@@ -101,19 +101,22 @@ for line in fileinput.input():
                 value = 0
         monster_values.append(value)
 
+    game.log("turn: {0}, values: {1}, best_monster: {2}".format(game.turn_number, monster_values, target_monster_index))
+
     target_monster = game.get_all_monsters()[target_monster_index]
     if target_monster_index is -1 or me.location == target_monster.location or target_monster.dead:
         # target the monster with the highest value
         target_monster_index = monster_values.index(max(monster_values))
         target_monster = game.get_all_monsters()[target_monster_index]
 
-    if game.shortest_paths(me.location, target_monster.location)[0] != path:
+    if game.shortest_paths(me.location, target_monster.location)[0] != path or len(path) == 0:
         path = game.shortest_paths(me.location, target_monster.location)[0]
 
-    if me.location == me.destination and me.location == path[0]:
+    if me.location == me.destination and me.location == path[0] and not game.has_monster(me.location):
         # remove path[0] and move on to the next node
         path.pop(0)
 
+    game.log("turn: {0}, current_path: {1}, possible_path: {2}".format(game.turn_number, path, game.shortest_paths(me.location, target_monster.location)[0]))
     destination_node = path[0]
 
     # choose your best stat stance (this will be overridden in most situations)

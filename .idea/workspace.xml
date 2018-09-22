@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7bef6efe-4eb5-4d89-b9b0-cdbc92d217ce" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/DefaultBot.py" beforeDir="false" afterPath="$PROJECT_DIR$/DefaultBot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MyBot.py" beforeDir="false" afterPath="$PROJECT_DIR$/MyBot.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -31,25 +30,25 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="3032" />
+          <entry key="py" value="3334" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="3032" />
+          <entry key="Python" value="3334" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
     </session>
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.3342677">
+    <splitter split-orientation="horizontal" split-proportion="0.25920245">
       <split-first>
         <leaf>
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/game_API.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2652">
+                <state relative-caret-position="867">
                   <caret line="156" column="16" selection-start-line="156" selection-start-column="8" selection-end-line="156" selection-end-column="16" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
@@ -62,21 +61,21 @@
       </split-first>
       <split-second>
         <leaf>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/MyBot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="527">
-                  <caret line="91" column="91" selection-start-line="91" selection-start-column="91" selection-end-line="91" selection-end-column="91" />
+                <state relative-caret-position="357">
+                  <caret line="114" column="102" selection-start-line="114" selection-start-column="102" selection-end-line="114" selection-end-column="102" />
                   <folding>
                     <element signature="e#37#52#0" expanded="true" />
-                    <marker date="1537591359947" expanded="true" signature="624:880" ph="..." />
-                    <marker date="1537591359947" expanded="true" signature="807:880" ph="..." />
+                    <marker date="1537592556564" expanded="true" signature="624:880" ph="..." />
+                    <marker date="1537592556564" expanded="true" signature="807:880" ph="..." />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/DefaultBot.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="17">
@@ -110,8 +109,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/MyBot.py" />
         <option value="$PROJECT_DIR$/DefaultBot.py" />
+        <option value="$PROJECT_DIR$/MyBot.py" />
       </list>
     </option>
   </component>
@@ -197,22 +196,10 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/game_API.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2652">
+        <state relative-caret-position="867">
           <caret line="156" column="16" selection-start-line="156" selection-start-column="8" selection-end-line="156" selection-end-column="16" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MyBot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="91" column="91" selection-start-line="91" selection-start-column="91" selection-end-line="91" selection-end-column="91" />
-          <folding>
-            <element signature="e#37#52#0" expanded="true" />
-            <marker date="1537591359947" expanded="true" signature="624:880" ph="..." />
-            <marker date="1537591359947" expanded="true" signature="807:880" ph="..." />
           </folding>
         </state>
       </provider>
@@ -223,6 +210,18 @@
           <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
           <folding>
             <element signature="e#37#52#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MyBot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="114" column="102" selection-start-line="114" selection-start-column="102" selection-end-line="114" selection-end-column="102" />
+          <folding>
+            <element signature="e#37#52#0" expanded="true" />
+            <marker date="1537592556564" expanded="true" signature="624:880" ph="..." />
+            <marker date="1537592556564" expanded="true" signature="807:880" ph="..." />
           </folding>
         </state>
       </provider>
