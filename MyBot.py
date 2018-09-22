@@ -165,7 +165,5 @@ for line in fileinput.input():
 
     lastHealth = me.health
 
-    game.log("Turn: {0}, Final_Destination: {1}, Current Location: {2}".format(game.turn_number, path[-1], me.location))
-
     # submit your decision for the turn (This function should be called exactly once per turn)
     game.submit_decision(destination_node, chosen_stance)
