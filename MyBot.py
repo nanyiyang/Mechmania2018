@@ -61,14 +61,12 @@ def most_common(lst):
 q = Queue()
 
 def should_i_farm(me):
-    if me.paper + me.scissors + me.rock >= 8:
-        return False
-    if me.health < 40:
+    if me.paper + me.scissors + me.rock >= 20:
         return False
     return True
 
 def should_i_farm_speed(me):
-    if me.speed > 0:
+    if me.speed > 2:
         return False
     return True
 
@@ -88,26 +86,39 @@ for line in fileinput.input():
 
     me = game.get_self()
     enemy = game.get_opponent();
+    objective = False
 
     if me.location == me.destination: # check if we have moved this turn
         # get all living monsters closest to me
-        if should_i_farm_speed == True:
-            to_move_to = farm_speed(me)
+        # if should_i_farm_speed == True:
+        #     to_move_to = farm_speed(me)
+        #
+        # if should_i_farm_health == True:
+        #     to_move_to = farm_health(me)
+        if game.has_monster(0) == True:
+            to_move_to = game.get_monster(0).location
+            objective = True
 
-        if should_i_farm_health == True:
-            to_move_to = farm_health(me)
+        if game.has_monster(3) == True:
+            to_move_to = game.get_monster(3).location
+            objective = True
 
-        monsters = game.nearest_monsters(me.location, 1)
+        if game.has_monster(21) == True and game.has_monster(3) == True:
+            to_move_to = game.get_monster(21).location
+            objective = True
+
+        if not objective:
+            monsters = game.nearest_monsters(me.location, 1)
+            to_move_to = monsters[0]
         # choose a monster to move to at random
-        to_move_to = monsters[0]
-
-
 
         if not should_i_farm(me):
             to_move_to = enemy
-
+        if objective == True:
+            paths = game.shortest_paths(ne.location, to_move_to)
+        else:
+            paths = game.shortest_paths(me.location, to_move_to.location)
         # get the set of shortest paths to that monster
-        paths = game.shortest_paths(me.location, to_move_to.location)
         destination_node = paths[random.randint(0, len(paths)-1)][0]
     else:
         destination_node = me.destination
@@ -132,3 +143,4 @@ for line in fileinput.input():
 
     # submit your decision for the turn (This function should be called exactly once per turn)
     game.submit_decision(destination_node, chosen_stance)
+    objective = False
