@@ -5,12 +5,16 @@ import json
 
 # your import statements here
 import random
+import math
 
 first_line = True # DO NOT REMOVE
 
 # global variables or other functions can go here
 stances = ["Rock", "Paper", "Scissors"]
 lastHealth = 100
+target_monster_index = -1
+path = []
+
 
 def get_winning_stance(stance):
     if stance == "Rock":
@@ -22,6 +26,7 @@ def get_winning_stance(stance):
 
 # Note: get_winning_stance(get_winning_stance(stance)) == get_losing_stance(stance)
 
+
 def get_losing_stance(stance):
     if stance == "Rock":
         return "Scissors"
@@ -29,6 +34,14 @@ def get_losing_stance(stance):
         return "Rock"
     elif stance == "Scissors":
         return "Paper"
+
+
+def opposite_logistic(x):
+    a = 3
+    k = 0.5
+    h = 100
+
+    return a/(1+math.e**(k*(x-h)))
 
 
 # main player script logic
@@ -45,6 +58,7 @@ for line in fileinput.input():
 
     me = game.get_self()
 
+    """
     if me.location == me.destination: # check if we have moved this turn
         # get all living monsters closest to me
         monsters = game.nearest_monsters(me.location, 1)
@@ -57,6 +71,50 @@ for line in fileinput.input():
         destination_node = paths[random.randint(0, len(paths)-1)][0]
     else:
         destination_node = me.destination
+    """
+
+    # choose destination by rating all monsters
+    monster_values = []
+    for monster in game.get_all_monsters():
+        value = 0
+        if not monster.dead:
+            # Weight for speed
+            value = value + (7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects["Speed"]
+            # Weight for heath
+            value = value + (me.base_health - me.health)*monster.death_effects["Health"]
+
+            statTotal = me.rock + me.paper + me.scissors
+            # Weight for rock stat
+            value = value + (10* statTotal / me.rock)*monster.death_effects["Rock"]
+            # Weight for paper stat
+            value = value + (10 * statTotal / me.paper) * monster.death_effects["Paper"]
+            # Weight for scissors stat
+            value = value + (10 * statTotal / me.scissors) * monster.death_effects["Scissors"]
+
+            # deduct from value based on attack
+            value = value - monster.attack
+            # divide the value by the distance to the monster
+            value = value/len(game.shortest_paths(me.location, monster.location)[0])
+
+            # checks if monster will kill you
+            if monster.attack > me.health:
+                value = 0
+        monster_values.append(value)
+
+    target_monster = game.get_all_monsters()[target_monster_index]
+    if target_monster_index is -1 or me.location == target_monster.location or target_monster.dead:
+        # target the monster with the highest value
+        target_monster_index = monster_values.index(max(monster_values))
+        target_monster = game.get_all_monsters()[target_monster_index]
+
+    if game.shortest_paths(me.location, target_monster.location)[0] != path:
+        path = game.shortest_paths(me.location, target_monster.location)[0]
+
+    if me.location == me.destination and me.location == path[0]:
+        # remove path[0] and move on to the next node
+        path.pop(0)
+
+    destination_node = path[0]
 
     # choose your best stat stance (this will be overridden in most situations)
     maxStat = max(me.rock, me.paper, me.scissors)
@@ -67,15 +125,14 @@ for line in fileinput.input():
     else:
         chosen_stance = "Scissors"
 
-    if game.has_monster(me.location):
+    if game.get_opponent().location == me.location:
+        if lastHealth - me.health > 1:
+            # if you took damage last turn choose the stance that will beat the stance that beat you.
+            # if you won the battle, switch to what counters their counter of you
+            chosen_stance = get_losing_stance(me.stance)
+    elif game.has_monster(me.location):
         # if there's a monster at my location, choose the stance that damages that monster
         chosen_stance = get_winning_stance(game.get_monster(me.location).stance)
-    if lastHealth - me.health > 1:
-        # if you took damage last turn choose the stance that will beat the stance that beat you.
-        chosen_stance = get_winning_stance(get_winning_stance(me.stance))
-    if lastHealth == me.health:
-        # if you won the battle, switch to what counters their counter of you
-        chosen_stance = get_losing_stance(me.stance)
 
     lastHealth = me.health
 
