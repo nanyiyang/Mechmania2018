@@ -37,9 +37,9 @@ def get_losing_stance(stance):
 
 
 def opposite_logistic(x):
-    a = 3  # amplitude
+    a = 1  # amplitude
     k = 0.5  # steepness
-    h = 100  # horizontal offset
+    h = 0  # horizontal offset
 
     return a/(1+math.e**(k*(x-h)))
 
@@ -48,6 +48,28 @@ def bell_curve(x):
     h = 4  # horizontal offset
     # returns value between 0 and 1
     return (math.e**(h-x))**(x-h)
+
+
+# returns amt health gained / lost from a fight
+def health_diff_from_fight(game, me, destination_node):
+    health_from_kill = game.get_monster(destination_node).death_effects.health
+
+    num_turns = 7 - me.speed
+    health_we_lose = monster.attack * num_turns
+
+    return health_from_kill - health_we_lose
+
+
+# checks if our destination will kill us
+def dest_will_kill(game, me, destination_node):
+    if (not game.has_monster(destination_node)):
+        return False
+
+    if me.health - health_diff_from_fight(game, me, destination_node) <= 0:
+        return True
+    else:
+        return False
+
 
 # main player script logic
 # DO NOT CHANGE BELOW ----------------------------
@@ -84,26 +106,24 @@ for line in fileinput.input():
         value = 0
         if not monster.dead:
             # Weight for speed
-            value = value + 3*(7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects.speed
-            # Weight for heath (100 = base health)
-            value = value + 3*(100 - me.health)*monster.death_effects.health
+            value = value + 0.5*(7-me.speed)*monster.death_effects.speed
+            # Weight for heath
+            value = value + 6*(health_diff_from_fight(game, me, monster.location))*monster.death_effects.health
 
             statTotal = me.rock + me.paper + me.scissors
             # Weight for rock stat
-            value = value + (10* statTotal / me.rock)*monster.death_effects.rock
+            value = value + (game.get_opponent().scissors * statTotal / me.rock)*monster.death_effects.rock
             # Weight for paper stat
-            value = value + (10 * statTotal / me.paper) * monster.death_effects.paper
+            value = value + (game.get_opponent().rock * statTotal / me.paper) * monster.death_effects.paper
             # Weight for scissors stat
-            value = value + (10 * statTotal / me.scissors) * monster.death_effects.scissors
+            value = value + (game.get_opponent().paper * statTotal / me.scissors) * monster.death_effects.scissors
 
-            # deduct from value based on attack
-            value = value - monster.attack
             # divide the value by the distance to the monster (bell_curve makes values in the middle the best)
-            value = value*bell_curve(len(game.shortest_paths(me.location, monster.location)[0]))
+            value = value*opposite_logistic(len(game.shortest_paths(me.location, monster.location)[0]))
 
             # checks if monster will kill you
-            if monster.attack > me.health:
-                value = 0
+            if dest_will_kill(game, me, monster.location):
+                value = -1000
         monster_values.append(value)
 
     target_monster = game.get_all_monsters()[target_monster_index]
@@ -118,7 +138,8 @@ for line in fileinput.input():
             path.pop(0)
 
     if (not game.has_monster(me.location) or (game.has_monster(me.location) and game.get_monster(me.location).dead)) and len(path) == 0:
-        path = game.shortest_paths(me.location, target_monster.location)[0]
+        i = random.randint(0, len(game.shortest_paths(me.location, target_monster.location)) - 1)
+        path = game.shortest_paths(me.location, target_monster.location)[i]
     elif len(path) == 0:
         path.append(me.location)
 
@@ -145,6 +166,11 @@ for line in fileinput.input():
     lastHealth = me.health
 
     game.log("Turn: {0}, Final_Destination: {1}, Current Location: {2}".format(game.turn_number, path[-1], me.location))
+    if game.has_monster(21):
+        drops = [game.get_monster(21).death_effects.rock, game.get_monster(21).death_effects.paper,
+                 game.get_monster(21).death_effects.scissors, game.get_monster(21).death_effects.health,
+                 game.get_monster(21).death_effects.speed]
+        # game.log("Bot 21 death_effects: {0}".format(drops))
 
     # submit your decision for the turn (This function should be called exactly once per turn)
     game.submit_decision(destination_node, chosen_stance)
