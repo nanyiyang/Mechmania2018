@@ -32,6 +32,7 @@ for line in fileinput.input():
     # code in this block will be executed each turn of the game
 
     me = game.get_self()
+    #test
 
     if me.location == me.destination: # check if we have moved this turn
         # get all living monsters closest to me
