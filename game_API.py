@@ -254,7 +254,6 @@ class Game:
             if min_dist != -1 and distances[n] > min_dist:
                 return ret
 
-
             for adj in self.nodes[n].adjacents:
                 if (distances[adj] == -1):
                     distances[adj] = distances[n] + 1

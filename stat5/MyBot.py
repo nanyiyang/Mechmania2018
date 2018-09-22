@@ -43,13 +43,6 @@ def most_common(lst):
 
 q = Queue()
 
-def should_i_farm(me):
-    if me.paper + me.scissors + me.rock >= 8:
-        return False
-    if me.health < 40:
-        return False
-    return True
-
 for line in fileinput.input():
     if first_line:
         game = game_API.Game(json.loads(line))
@@ -68,13 +61,10 @@ for line in fileinput.input():
         monsters = game.nearest_monsters(me.location, 1)
 
         # choose a monster to move to at random
-        to_move_to = monsters[0]
-
-        if not should_i_farm(me):
-            to_move_to = enemy
+        monster_to_move_to = monsters[0]
 
         # get the set of shortest paths to that monster
-        paths = game.shortest_paths(me.location, to_move_to.location)
+        paths = game.shortest_paths(me.location, monster_to_move_to.location)
         destination_node = paths[random.randint(0, len(paths)-1)][0]
     else:
         destination_node = me.destination
@@ -86,16 +76,16 @@ for line in fileinput.input():
         # otherwise, pick a random stance
         chosen_stance = stances[random.randint(0, 2)]
     
+
     q.push(enemy.stance)
 
-    if q.size() > 3:
+    if q.size() > 4:
         q.pop()
 
     if enemy.location == me.location and enemy.stance in ["Rock", "Scissors", "Paper"]:
         chosen_stance = get_winning_stance(most_common(q.items))
 
-    if chosen_stance not in ["Rock", "Scissors", "Paper"]:
+    if chosen_stance is None:
         chosen_stance = "Rock"
-    
     # submit your decision for the turn (This function should be called exactly once per turn)
     game.submit_decision(destination_node, chosen_stance)
