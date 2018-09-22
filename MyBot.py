@@ -42,8 +42,29 @@ def pick_dest_for_speed(game, me):
 
     return destination_node
 
+# Returns best amt of health gained / lost going to a node
+# and which path it took to get there
+# Return value: [health gained, path taken[]]
+def value_of_going_somewhere(game, me, destination_node):
+    paths = game.shortest_paths(me.location, destination_node)
+
+    healths = []
+    paths = []
+
+    for path_index in range(0, len(paths)):
+        healths.append(0)
+        paths.append(paths[path_index])
+        for dest in paths[path_index]:
+            healths[path_index] += health_diff_from_fight(game, me, dest)
+
+    max_health = max(healths)
+    fastest_path = paths[healths.index(max_health)]
+
+    return [max_health, fastest_path]
+
 # returns amt health gained / lost from a fight
 def health_diff_from_fight(game, me, destination_node):
+
     health_from_kill = game.get_monster(destination_node).death_effects.health
 
     num_turns = 7 - me.speed
