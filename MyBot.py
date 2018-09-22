@@ -37,12 +37,17 @@ def get_losing_stance(stance):
 
 
 def opposite_logistic(x):
-    a = 3
-    k = 0.5
-    h = 100
+    a = 3  # amplitude
+    k = 0.5  # steepness
+    h = 100  # horizontal offset
 
     return a/(1+math.e**(k*(x-h)))
 
+
+def bell_curve(x):
+    h = 4  # horizontal offset
+    # returns value between 0 and 1
+    return (math.e**(h-x))**(x-h)
 
 # main player script logic
 # DO NOT CHANGE BELOW ----------------------------
@@ -79,9 +84,9 @@ for line in fileinput.input():
         value = 0
         if not monster.dead:
             # Weight for speed
-            value = value + (7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects.speed
+            value = value + 3*(7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects.speed
             # Weight for heath (100 = base health)
-            value = value + (100 - me.health)*monster.death_effects.health
+            value = value + 3*(100 - me.health)*monster.death_effects.health
 
             statTotal = me.rock + me.paper + me.scissors
             # Weight for rock stat
@@ -93,15 +98,13 @@ for line in fileinput.input():
 
             # deduct from value based on attack
             value = value - monster.attack
-            # divide the value by the distance to the monster
-            value = value/len(game.shortest_paths(me.location, monster.location)[0])
+            # divide the value by the distance to the monster (bell_curve makes values in the middle the best)
+            value = value*bell_curve(len(game.shortest_paths(me.location, monster.location)[0]))
 
             # checks if monster will kill you
             if monster.attack > me.health:
                 value = 0
         monster_values.append(value)
-
-    game.log("turn: {0}, values: {1}, best_monster: {2}".format(game.turn_number, monster_values, target_monster_index))
 
     target_monster = game.get_all_monsters()[target_monster_index]
     if target_monster_index is -1 or me.location == target_monster.location or target_monster.dead:
@@ -109,14 +112,16 @@ for line in fileinput.input():
         target_monster_index = monster_values.index(max(monster_values))
         target_monster = game.get_all_monsters()[target_monster_index]
 
-    if game.shortest_paths(me.location, target_monster.location)[0] != path or len(path) == 0:
+    if len(path) != 0 and me.location == me.destination and me.location == path[0]:
+        if not game.has_monster(me.location) or game.has_monster(me.location) and game.get_monster(me.location).dead:
+            # remove path[0] and move on to the next node
+            path.pop(0)
+
+    if (not game.has_monster(me.location) or (game.has_monster(me.location) and game.get_monster(me.location).dead)) and len(path) == 0:
         path = game.shortest_paths(me.location, target_monster.location)[0]
+    elif len(path) == 0:
+        path.append(me.location)
 
-    if me.location == me.destination and me.location == path[0] and not game.has_monster(me.location):
-        # remove path[0] and move on to the next node
-        path.pop(0)
-
-    game.log("turn: {0}, current_path: {1}, possible_path: {2}".format(game.turn_number, path, game.shortest_paths(me.location, target_monster.location)[0]))
     destination_node = path[0]
 
     # choose your best stat stance (this will be overridden in most situations)
@@ -138,6 +143,8 @@ for line in fileinput.input():
         chosen_stance = get_winning_stance(game.get_monster(me.location).stance)
 
     lastHealth = me.health
+
+    game.log("Turn: {0}, Final_Destination: {1}, Current Location: {2}".format(game.turn_number, path[-1], me.location))
 
     # submit your decision for the turn (This function should be called exactly once per turn)
     game.submit_decision(destination_node, chosen_stance)
