@@ -43,6 +43,11 @@ def most_common(lst):
 
 q = Queue()
 
+is_flip = 0
+
+last_me_stance = "None"
+last_last_me_stance = "None"
+
 def should_i_farm(me):
     if me.paper + me.scissors + me.rock >= 8:
         return False
@@ -93,9 +98,20 @@ for line in fileinput.input():
 
     if enemy.location == me.location and enemy.stance in ["Rock", "Scissors", "Paper"]:
         chosen_stance = get_winning_stance(most_common(q.items))
+        if enemy.stance == get_winning_stance(last_last_me_stance):
+            is_flip += 1
+        else:
+            is_flip -= 1
+        if is_flip >= 3:
+            game.log("flip")
+            chosen_stance = get_winning_stance(get_winning_stance(last_me_stance))
 
     if chosen_stance not in ["Rock", "Scissors", "Paper"]:
         chosen_stance = "Rock"
     
+
     # submit your decision for the turn (This function should be called exactly once per turn)
+    last_last_me_stance = last_me_stance
+    last_me_stance = chosen_stance
     game.submit_decision(destination_node, chosen_stance)
+    
