@@ -11,6 +11,17 @@ first_line = True # DO NOT REMOVE
 # global variables or other functions can go here
 stances = ["Rock", "Paper", "Scissors"]
 
+# find monster with defined input function
+def monster_with_max_attribute(monsters, attribute_fn):
+    max_monster = monsters[0]
+    maxn = 0
+    for monster in monsters:
+        if attribute_fn(monster) > maxn:
+            max_monster = monster
+            maxn = attribute_fn(monster)
+
+    return max_monster
+
 def get_winning_stance(stance):
     if stance == "Rock":
         return "Paper"
@@ -31,10 +42,24 @@ def pick_dest_for_speed(game, me):
 
     return destination_node
 
-# checks if our destination will kill us
-def will_dest_kill(game, me, destination_node):
-    if (!has_monster(destination_node)):
+# returns amt health gained / lost from a fight
+def health_diff_from_fight(game, me, destination_node):
+    health_from_kill = game.get_monster(destination_node).death_effects.health
 
+    num_turns = 7 - me.speed
+    health_we_lose = monster.attack * num_turns
+
+    return health_from_kill - health_we_lose
+
+# checks if our destination will kill us
+def dest_will_kill(game, me, destination_node):
+    if (not game.has_monster(destination_node)):
+        return False
+
+    if me.health - health_diff_from_fight(game, me, destination_node) <= 0:
+        return True
+    else:
+        return False
 
 def random_move(game, me):
     # get all living monsters closest to me
@@ -63,18 +88,18 @@ for line in fileinput.input():
 
     me = game.get_self()
 
+    s_weight = 0.5
+
     h_weight = 0.2
     r_weight = 0.2
     sc_weight = 0.2
     p_weight = 0.2
-    s_weight = 0.2
 
     if me.location == me.destination: # check if we have moved this turn
         destination_node = pick_dest_for_speed(game, me)
 
-        if destination_node == -1:
+        if destination_node == -1 or dest_will_kill(game, me, destination_node):
             destination_node = random_move(game, me)
-
 
     else:
         destination_node = me.destination
