@@ -7,7 +7,7 @@ import json
 import random
 import math
 
-first_line = True # DO NOT REMOVE
+first_line = True  # DO NOT REMOVE
 
 # global variables or other functions can go here
 stances = ["Rock", "Paper", "Scissors"]
@@ -166,11 +166,6 @@ for line in fileinput.input():
     lastHealth = me.health
 
     game.log("Turn: {0}, Final_Destination: {1}, Current Location: {2}".format(game.turn_number, path[-1], me.location))
-    if game.has_monster(21):
-        drops = [game.get_monster(21).death_effects.rock, game.get_monster(21).death_effects.paper,
-                 game.get_monster(21).death_effects.scissors, game.get_monster(21).death_effects.health,
-                 game.get_monster(21).death_effects.speed]
-        # game.log("Bot 21 death_effects: {0}".format(drops))
 
     # submit your decision for the turn (This function should be called exactly once per turn)
     game.submit_decision(destination_node, chosen_stance)
