@@ -79,17 +79,17 @@ for line in fileinput.input():
         value = 0
         if not monster.dead:
             # Weight for speed
-            value = value + (7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects["Speed"]
+            value = value + (7-me.speed + opposite_logistic(game.turn_number))*monster.death_effects.speed
             # Weight for heath
-            value = value + (me.base_health - me.health)*monster.death_effects["Health"]
+            value = value + (me.base_health - me.health)*monster.death_effects.health
 
             statTotal = me.rock + me.paper + me.scissors
             # Weight for rock stat
-            value = value + (10* statTotal / me.rock)*monster.death_effects["Rock"]
+            value = value + (10* statTotal / me.rock)*monster.death_effects.rock
             # Weight for paper stat
-            value = value + (10 * statTotal / me.paper) * monster.death_effects["Paper"]
+            value = value + (10 * statTotal / me.paper) * monster.death_effects.paper
             # Weight for scissors stat
-            value = value + (10 * statTotal / me.scissors) * monster.death_effects["Scissors"]
+            value = value + (10 * statTotal / me.scissors) * monster.death_effects.scissors
 
             # deduct from value based on attack
             value = value - monster.attack
