@@ -62,6 +62,7 @@ is_flip = 0
 last_me_stance = "None"
 last_last_me_stance = "None"
 target_monster_index = -1
+initial_path = [0, 10, 16, 10, 0, 6, 7, 8, 14, 19, 23, 19, 22, 12, 11, 10, 0]
 path = []
 
 
@@ -144,6 +145,47 @@ def dest_will_kill(game, me, node):
         return False
 
 
+def we_should_change_dest(game, me):
+    will_kill_monster_in_time = False
+
+    if time_to_kill_monster(game, me, me.location) >= 0:
+        will_kill_monster_in_time = (
+                    (time_to_kill_monster(game, me, me.location)) < (me.movement_counter - me.speed))
+
+    return me.location == initial_path[0] and (not game.has_monster(me.location)
+                                            or (game.has_monster(me.location) and
+                                                not game.get_monster(me.location).dead
+                                                and will_kill_monster_in_time))
+
+
+# returns number of turns it will take to kill the monster at that location
+def time_to_kill_monster(game, me, location):
+    if not game.has_monster(location):
+        return -1
+
+    monster = game.get_monster(location)
+    wstance = get_winning_stance(monster.stance)
+
+    strength = strength_of_stance(me, wstance)
+    if strength == -1:
+        return -1
+    else:
+        return math.ceil(monster.health / strength)
+
+
+# returns player's strength in said stance
+# return -1
+def strength_of_stance(me, stance):
+    if stance == "Rock":
+        return me.rock
+    elif stance == "Scissors":
+        return me.scissors
+    elif stance == "Paper":
+        return me.paper
+    else:
+        return -1
+
+
 for line in fileinput.input():
     if first_line:
         game = game_API.Game(json.loads(line))
@@ -157,61 +199,67 @@ for line in fileinput.input():
     me = game.get_self()
     enemy = game.get_opponent()
 
-    # choose destination by rating all monsters and opponent
-    monster_values = []
-    opponent_value = 0
-    statTotal = me.rock + me.paper + me.scissors
-    for monster in game.get_all_monsters():
-        value = 0
-        if not monster.dead or monster.respawn_counter - turns_to_get_to(game, me, monster.location) <= 7-me.speed + 2:
-            # Weight for speed
-            value = value + 3.0 * (7 - me.speed) * monster.death_effects.speed
-            # Weight for heath
-            value = value + 0.2 * (150 - me.health) * (health_diff_from_fight(game, me, monster.location)) * monster.death_effects.health
-            # Weight for rock stat
-            value = value + 0.5 * (game.get_opponent().scissors * statTotal / me.rock) * monster.death_effects.rock
-            # Weight for paper stat
-            value = value + 0.5 * (game.get_opponent().rock * statTotal / me.paper) * monster.death_effects.paper
-            # Weight for scissors stat
-            value = value + 0.5 * (game.get_opponent().paper * statTotal / me.scissors) * monster.death_effects.scissors
+    if len(initial_path) != 0:
+        if we_should_change_dest(game, me):
+            initial_path.pop(0)
 
-            # divide the value by the distance to the monster (bell_curve makes values in the middle the best)
-            value = value * (2/(len(game.shortest_paths(me.location, monster.location)[0]) * len(game.shortest_paths(monster.location, 0)[0]) + 1))
+        destination_node = initial_path[0]
+    else:
+        # choose destination by rating all monsters and opponent
+        monster_values = []
+        opponent_value = 0
+        statTotal = me.rock + me.paper + me.scissors
+        for monster in game.get_all_monsters():
+            value = 0
+            if not monster.dead or monster.respawn_counter - turns_to_get_to(game, me, monster.location) <= 7-me.speed + 2:
+                # Weight for speed
+                value = value + 3.0 * (7 - me.speed) * monster.death_effects.speed
+                # Weight for heath
+                value = value + 0.1 * (150 - me.health) * (health_diff_from_fight(game, me, monster.location)) * monster.death_effects.health
+                # Weight for rock stat
+                value = value + 0.5 * (game.get_opponent().scissors * statTotal / me.rock) * monster.death_effects.rock
+                # Weight for paper stat
+                value = value + 0.5 * (game.get_opponent().rock * statTotal / me.paper) * monster.death_effects.paper
+                # Weight for scissors stat
+                value = value + 0.5 * (game.get_opponent().paper * statTotal / me.scissors) * monster.death_effects.scissors
 
-            # checks if monster will kill you
-            if dest_will_kill(game, me, monster.location):
-                value = -1000
-        monster_values.append(value)
-    opponent_value = 0.15 * statTotal * (me.health/game.get_opponent().health)
+                # divide the value by the distance to the monster (bell_curve makes values in the middle the best)
+                value = value * (2/(len(game.shortest_paths(me.location, monster.location)[0]) * len(game.shortest_paths(monster.location, 0)[0]) + 1))
 
-    if max(monster_values) > opponent_value:
-        target_monster = game.get_all_monsters()[target_monster_index]
-        if target_monster_index is -1 or me.location == target_monster.location or target_monster.dead:
-            # target the monster with the highest value
-            target_monster_index = monster_values.index(max(monster_values))
+                # checks if monster will kill you
+                if dest_will_kill(game, me, monster.location):
+                    value = -1000
+            monster_values.append(value)
+        opponent_value = 0.15 * statTotal * (me.health/game.get_opponent().health)
+
+        if max(monster_values) > opponent_value:
             target_monster = game.get_all_monsters()[target_monster_index]
+            if target_monster_index is -1 or me.location == target_monster.location or target_monster.dead:
+                # target the monster with the highest value
+                target_monster_index = monster_values.index(max(monster_values))
+                target_monster = game.get_all_monsters()[target_monster_index]
 
-        if len(path) != 0 and me.location == me.destination and me.location == path[0]:
-            if not game.has_monster(me.location) or (game.has_monster(me.location) and
-                    game.get_monster(me.location).dead) or (
-                    will_kill_monster_before_move(me, game.get_monster(me.location))):
-                # remove path[0] and move on to the next node
+            if len(path) != 0 and me.location == me.destination and me.location == path[0]:
+                if not game.has_monster(me.location) or (game.has_monster(me.location) and
+                        game.get_monster(me.location).dead) or (
+                        will_kill_monster_before_move(me, game.get_monster(me.location))):
+                    # remove path[0] and move on to the next node
+                    path.pop(0)
+
+            if (not game.has_monster(me.location) or (game.has_monster(me.location) and
+                                                      game.get_monster(me.location).dead)) and len(path) == 0:
+                i = random.randint(0, len(game.shortest_paths(me.location, target_monster.location)) - 1)
+                path = game.shortest_paths(me.location, target_monster.location)[i]
+            elif len(path) == 0:
+                path.append(me.location)
+        else:
+            if me.location == path[0]:
                 path.pop(0)
 
-        if (not game.has_monster(me.location) or (game.has_monster(me.location) and
-                                                  game.get_monster(me.location).dead)) and len(path) == 0:
-            i = random.randint(0, len(game.shortest_paths(me.location, target_monster.location)) - 1)
-            path = game.shortest_paths(me.location, target_monster.location)[i]
-        elif len(path) == 0:
-            path.append(me.location)
-    else:
-        if me.location == path[0]:
-            path.pop(0)
+            i = random.randint(0, len(game.shortest_paths(me.location, enemy.location)) - 1)
+            path = game.shortest_paths(me.location, enemy.location)[i]
 
-        i = random.randint(0, len(game.shortest_paths(me.location, enemy.location)) - 1)
-        path = game.shortest_paths(me.location, enemy.location)[i]
-
-    destination_node = path[0]
+        destination_node = path[0]
 
     if game.has_monster(me.location):
         # if there's a monster at my location, choose the stance that damages that monster
