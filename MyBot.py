@@ -95,19 +95,20 @@ for line in fileinput.input():
         #
         # if should_i_farm_health == True:
         #     to_move_to = farm_health(me)
-        if game.has_monster(0) == True:
+        if game.has_monster(0) == True and game.get_monster(0).dead == False:
             to_move_to = game.get_monster(0).location
             objective = True
 
-        if game.has_monster(3) == True:
+        if game.has_monster(3) == True and game.get_monster(3).dead == False:
             to_move_to = game.get_monster(3).location
             objective = True
 
-        if game.has_monster(21) == True and game.has_monster(3) == True:
+        if game.has_monster(21) == True and game.get_monster(21).dead == False and game.has_monster(3) == False:
             to_move_to = game.get_monster(21).location
             objective = True
-
-        if not objective:
+            game.log("struct once")
+        else:
+            objective = False
             monsters = game.nearest_monsters(me.location, 1)
             to_move_to = monsters[0]
         # choose a monster to move to at random
@@ -115,7 +116,7 @@ for line in fileinput.input():
         if not should_i_farm(me):
             to_move_to = enemy
         if objective == True:
-            paths = game.shortest_paths(ne.location, to_move_to)
+            paths = game.shortest_paths(me.location, to_move_to)
         else:
             paths = game.shortest_paths(me.location, to_move_to.location)
         # get the set of shortest paths to that monster
